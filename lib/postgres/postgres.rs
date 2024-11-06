@@ -66,7 +66,16 @@ impl Postgres {
     }
     
 
-    
+    // pub async fn execute_query(&self, query: &str) -> Result<Vec<Row>, Error> {
+    //     if let Some(client) = &self.client {
+    //         LOGGER.info(&format!("Executing query: {}", query));
+    //         let rows = client.query(query, &[]).await?;
+    //         LOGGER.info("Query executed successfully.");
+    //         Ok(rows)
+    //     } else {
+    //         Err(anyhow::anyhow!("Not connected to the database"))
+    //     }
+    // }
     
 }
 
