@@ -2,20 +2,34 @@ use axum::extract::Multipart;
 use axum::{http::StatusCode, response::IntoResponse, Json};
 use std::fs::{self, File};
 use std::io::Write;
-use std::path::Path;
 
+use std::path::Path;
+use super::format::{is_archive, is_mp3};
+use crate::service::archiving::get_file_metadata;
 
 pub async fn upload(mut multipart: Multipart) -> impl IntoResponse {
-    let upload_dir = Path::new("./uploads");
-    if !upload_dir.exists() {
-        fs::create_dir_all(&upload_dir).expect("Failed to create upload directory");
-    }
+    let upload_dir = Path::new("./uploads").to_path_buf();
+    let mp3_dir = upload_dir.join("mp3");
+    let archive_dir = upload_dir.join("archive");
+    fs::create_dir_all(&mp3_dir).expect("Failed to create mp3 directory");
+    fs::create_dir_all(&archive_dir).expect("Failed to create archive directory");
+
     while let Some(field) = multipart.next_field().await.unwrap() {
         let fname = field.file_name().unwrap().to_string();
         let data = field.bytes().await.unwrap();
-        let mut file = File::create(format!("./uploads/{}", fname)).unwrap();
-        file.write_all(&data).unwrap()
-       
+        let dir = if is_mp3(&data) {
+            &mp3_dir
+        } else if is_archive(&data) {
+            &archive_dir
+        } else {
+            &upload_dir
+        };
+        let file_path = dir.join(&fname);
+        let mut file = File::create(&file_path).unwrap();
+        file.write_all(&data).unwrap();
+        if is_mp3(&data) {
+            get_file_metadata(&file_path.to_str().unwrap());
+        }
     }
     (StatusCode::OK, Json("File uploaded successfully"))
 }
