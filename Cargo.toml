@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-sqlx = { version = "0.6.2", features = ["postgres", "runtime-tokio-rustls"] }
-tokio = { version = "1.19.2", features = ["full"] }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls"] }
+tokio = { version = "1.41.1", features = ["full"] }
 tokio-postgres = "0.7"
 anyhow = "1.0"
 dotenv = "0.15"
@@ -28,7 +28,6 @@ zip = "0.6.2"
 ffmpeg-next = "6"
 infer = "0.13"
 symphonia = { version = "0.5.4", features = ["all"] }
-diesel = { version = "1.4.8", features = ["postgres"] }
 chrono = "0.4.38"
 
 

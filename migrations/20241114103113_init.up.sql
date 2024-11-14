@@ -1,4 +1,4 @@
-create table files_metadata (
+create table if not exists files_metadata (
     id serial primary key,
     name text not null,
     bitrate numeric not null,
