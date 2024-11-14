@@ -1,16 +1,14 @@
 
-struct FileMetadata {
-    id: i32,
-    name: String,
-    bitrate: f64,
-    duration: f64,
-    size: f64,
+pub struct FileMetadata {
+    pub name: String,
+    pub bitrate: f64,
+    pub duration: f64,
+    pub size: f64,
 }
 
 impl FileMetadata {
-    pub fn new(id: i32, name: &str, bitrate: f64, duration: f64, size: f64) -> Self {
+    pub fn new(name: &str, bitrate: f64, duration: f64, size: f64) -> Self {
         Self {
-            id,
             name: name.to_string(),
             bitrate,
             duration,
