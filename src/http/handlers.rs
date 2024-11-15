@@ -36,7 +36,7 @@ impl Handler {
             let mut file = File::create(&file_path).unwrap();
             file.write_all(&data).unwrap();
             if is_mp3(&data) {
-                self.service.get_file_metadata(&file_path.to_str().unwrap()).await;
+                self.service.get_file_metadata(&file_path.to_str().unwrap(), &fname).await;
             }
         }
         (StatusCode::OK, Json("File uploaded successfully"))

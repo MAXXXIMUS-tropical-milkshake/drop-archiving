@@ -12,8 +12,7 @@ impl Db {
     }
 
     pub async fn insert(&self, file: FileMetadata) -> Result<(), Error> {
-        let query =
-            "insert into files_metadata (name, bitrate, duration, size, created, updated)
+        let query = "insert into files_metadata (name, bitrate, duration, size, created, updated)
                             values ($1, $2, $3, $4, now(), now())";
         LOGGER.info(&format!("Trying to insert metadata of file {}", &file.name));
         match sqlx::query(&query)
@@ -29,7 +28,10 @@ impl Db {
                 Ok(())
             }
             Err(e) => {
-                LOGGER.error(&format!("Insertion file's {} metadata was failed with error {:?}", &file.name, e));
+                LOGGER.error(&format!(
+                    "Insertion file's {} metadata was failed with error {:?}",
+                    &file.name, e
+                ));
                 Err(e.into())
             }
         }

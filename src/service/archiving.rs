@@ -4,18 +4,19 @@ use std::str;
 
 use crate::db::models::FileMetadata;
 use crate::db::query::Db;
+use crate::db::store::MinioStore;
 use crate::lib::LOGGER;
 
 pub struct Service {
     db: Db,
-    //pub logger: Logger,
+    store: MinioStore, //pub logger: Logger,
 }
 
 impl Service {
-    pub fn new(db: Db) -> Self {
-        Self { db }
+    pub fn new(db: Db, store: MinioStore) -> Self {
+        Self { db, store }
     }
-    pub async fn get_file_metadata(&self, file_path: &str) {
+    pub async fn get_file_metadata(&self, file_path: &str, fname: &str) {
         let bitrate_cmd = Command::new("ffprobe")
             .args(&[
                 "-v",
@@ -59,5 +60,6 @@ impl Service {
         println!("Size of file is {} Mb", size);
         let file = FileMetadata::new(&file_path, bitrate, duration, size);
         let _ = self.db.insert(file).await;
+        let _ = self.store.upload_file(file_path,fname).await;
     }
 }
