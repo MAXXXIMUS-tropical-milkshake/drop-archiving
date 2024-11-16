@@ -1,15 +1,16 @@
-use std::fs::metadata;
-use std::process::Command;
-use std::str;
-
 use crate::db::models::FileMetadata;
 use crate::db::query::Db;
 use crate::db::store::MinioStore;
 use crate::lib::LOGGER;
+use std::fs;
+use std::fs::metadata;
+use std::path::Path;
+use std::process::Command;
+use std::str;
 
 pub struct Service {
     db: Db,
-    store: MinioStore, //pub logger: Logger,
+    store: MinioStore,
 }
 
 impl Service {
@@ -58,8 +59,58 @@ impl Service {
         println!("Duration: {} seconds", duration);
         let size = metadata(&file_path).unwrap().len() as f64 / (1024.0 * 1024.0);
         println!("Size of file is {} Mb", size);
-        let file = FileMetadata::new(&file_path, bitrate, duration, size);
+        let file = FileMetadata::new(&fname, bitrate, duration, size);
         let _ = self.db.insert(file).await;
-        let _ = self.store.upload_file(file_path,fname).await;
+        let _ = self.store.upload_file(file_path, fname).await;
+    }
+
+    pub fn reduce_bitrate(
+        &self,
+        input_file: &str,
+        target_bitrate: u32,
+    ) -> Result<(), String> {
+        if !Path::new(input_file).exists() {
+            return Err(format!("Input file does not exist: {}", input_file));
+        }
+
+        let temp_file = format!("{}.temp", input_file);
+        let target_bitrate_str = format!("{}k", target_bitrate);
+
+        let status = Command::new("ffmpeg")
+            .args(&[
+                "-i",
+                input_file,
+                "-map",
+                "0:a",
+                "-b:a",
+                &target_bitrate_str,
+                "-c:a",
+                "libmp3lame",
+                "-f",
+                "mp3",
+                "-y",
+                &temp_file,
+            ])
+            .status();
+
+        match status {
+            Ok(s) if s.success() => {
+                fs::rename(&temp_file, input_file)
+                    .map_err(|e| format!("Failed to overwrite input file: {}", e))?;
+                println!("Bitrate reduced successfully, updated file: {}", input_file);
+                Ok(())
+            }
+            Ok(s) => {
+                let _ = fs::remove_file(&temp_file);
+                Err(format!(
+                    "ffmpeg exited with a non-zero status: {}",
+                    s.code().unwrap_or(-1)
+                ))
+            }
+            Err(e) => {
+                let _ = fs::remove_file(&temp_file);
+                Err(format!("Failed to execute ffmpeg: {}", e))
+            }
+        }
     }
 }
