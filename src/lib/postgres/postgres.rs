@@ -1,5 +1,6 @@
 use once_cell::sync::Lazy;
 use sqlx::{Error, PgPool};
+use sqlx::postgres::PgPoolOptions;
 use std::io;
 use std::time::{self, Duration, Instant};
 use tokio::time::sleep;
@@ -15,7 +16,6 @@ const DEFAULT_MAX_POOL_SIZE: u32 = 10;
 const DEFAULT_CONN_ATTEMPTS: u32 = 10;
 const DEFAULT_CONN_TIMEOUT: Duration = Duration::from_secs(1);
 
-
 pub struct Postgres {
     pub pool: PgPool,
 }
@@ -25,26 +25,39 @@ impl Postgres {
         let mut attempts_left = DEFAULT_CONN_ATTEMPTS;
 
         while attempts_left > 0 {
-            match PgPool::connect(db_url).await {
+            match PgPoolOptions::new()
+                .max_connections(DEFAULT_MAX_POOL_SIZE) // Максимальный размер пула
+                .acquire_timeout(std::time::Duration::from_secs(300))
+                .connect(db_url)
+                .await
+            {
                 Ok(pool) => {
                     LOGGER.info("Successfully connected to the database, returning Ok");
                     return Ok(Self { pool });
                 }
                 Err(e) => {
                     attempts_left -= 1;
-                    LOGGER.error(&format!("Connection to database was failed, attemts left: {}", attempts_left));
+                    LOGGER.error(&format!(
+                        "Connection to database was failed, attemts left: {}",
+                        attempts_left
+                    ));
                     if attempts_left > 0 {
-                        LOGGER.debug(&format!("Retrying to connect to database in {:?}", DEFAULT_CONN_TIMEOUT));
+                        LOGGER.debug(&format!(
+                            "Retrying to connect to database in {:?}",
+                            DEFAULT_CONN_TIMEOUT
+                        ));
                         sleep(DEFAULT_CONN_TIMEOUT).await;
-                    }
-                    else {
-                        LOGGER.error(&format!("Failed to connect to database after {} attempts", DEFAULT_CONN_ATTEMPTS));
+                    } else {
+                        LOGGER.error(&format!(
+                            "Failed to connect to database after {} attempts",
+                            DEFAULT_CONN_ATTEMPTS
+                        ));
                         return Err(e);
                     }
                 }
             }
         }
-    Err(Error::Protocol("Failed to connect to database".into()))
+        Err(Error::Protocol("Failed to connect to database".into()))
     }
 
     //     pub async fn connect(&mut self, db_url: &str) -> Result<(), Error> {

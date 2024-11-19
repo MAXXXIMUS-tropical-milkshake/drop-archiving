@@ -12,14 +12,15 @@ impl Db {
     }
 
     pub async fn insert(&self, file: FileMetadata) -> Result<(), Error> {
-        let query = "insert into files_metadata (name, bitrate, duration, size, created, updated)
-                            values ($1, $2, $3, $4, now(), now())";
+        let query = "insert into files_metadata (name, bitrate, duration, size, user_id, created, updated)
+                            values ($1, $2, $3, $4, $5, now(), now())";
         LOGGER.info(&format!("Trying to insert metadata of file {}", &file.name));
         match sqlx::query(&query)
             .bind(&file.name)
             .bind(&file.bitrate)
             .bind(&file.duration)
             .bind(&file.size)
+            .bind(&file.user_id)
             .execute(&self.postgres.pool)
             .await
         {

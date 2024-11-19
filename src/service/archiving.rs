@@ -1,7 +1,6 @@
 use crate::db::models::FileMetadata;
 use crate::db::query::Db;
 use crate::db::store::MinioStore;
-use crate::lib::LOGGER;
 use std::fs;
 use std::fs::metadata;
 use std::path::Path;
@@ -17,7 +16,7 @@ impl Service {
     pub fn new(db: Db, store: MinioStore) -> Self {
         Self { db, store }
     }
-    pub async fn get_file_metadata(&self, file_path: &str, fname: &str) {
+    pub async fn get_file_metadata(&self, file_path: &str, fname: &str, user_id: i64) {
         let bitrate_cmd = Command::new("ffprobe")
             .args(&[
                 "-v",
@@ -59,7 +58,7 @@ impl Service {
         println!("Duration: {} seconds", duration);
         let size = metadata(&file_path).unwrap().len() as f64 / (1024.0 * 1024.0);
         println!("Size of file is {} Mb", size);
-        let file = FileMetadata::new(&fname, bitrate, duration, size);
+        let file = FileMetadata::new(&fname, bitrate, duration, size, user_id);
         let _ = self.db.insert(file).await;
         let _ = self.store.upload_file(file_path, fname).await;
     }
@@ -92,7 +91,6 @@ impl Service {
                 &temp_file,
             ])
             .status();
-
         match status {
             Ok(s) if s.success() => {
                 fs::rename(&temp_file, input_file)
