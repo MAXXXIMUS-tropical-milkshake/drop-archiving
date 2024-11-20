@@ -76,7 +76,7 @@ impl Handler {
                     .await;
             }
             if is_archive(&data) {
-                let files = get_archive_files(&file_path, &mp3_dir).unwrap();
+                let files = get_archive_files(&file_path, &mp3_dir).await.unwrap();
                 let tasks: Vec<_> = files
                     .into_iter()
                     .map(|file| {
