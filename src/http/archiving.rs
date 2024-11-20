@@ -35,7 +35,7 @@ pub async fn get_archive_files(
                 file.read_to_end(&mut data).unwrap();
                 if is_mp3(&data) {
                     let file_path = mp3_dir.join(&fname);
-                    println!("{}", &file_path.to_str().unwrap());
+                    //println!("{}", &file_path.to_str().unwrap());
                     let mut file = File::create(&file_path).unwrap();
                     file.write_all(&data).unwrap();
                     Some(file_path)
