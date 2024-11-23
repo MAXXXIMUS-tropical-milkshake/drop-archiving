@@ -22,10 +22,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_max_level(tracing::Level::INFO)
         .init();
     let p = Postgres::new("postgres://postgres:postgres@localhost:5432/files_metadata").await?;
-    let m = Minio::new("minioadmin", "minioadmin", "us-east-1", "http://127.0.0.1:9000", "drop-test");
+    let m = Minio::new("minioadmin", "minioadmin", "us-east-1", "http://127.0.0.1:9002", "drop-test");
     let ms = MinioStore::new(m);
     let db = Db::new(p);
-    let g = GrpcClient::connect("http://127.0.0.1:50051").await?;
+    let g = GrpcClient::connect("http://127.0.0.1:50052").await?;
     let service = Service::new(db, ms);
     let handler = Handler::new(service, g);
     let router = AppRouter::new(handler);

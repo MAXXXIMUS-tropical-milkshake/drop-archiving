@@ -13,3 +13,11 @@ pub fn is_archive(data: &[u8]) -> bool {
         false
     }
 }
+
+pub fn is_image(data: &[u8]) -> bool {
+    if let Some(kind) = infer::get(data) {
+        kind.mime_type().starts_with("image/")
+    } else {
+        false
+    }
+}
