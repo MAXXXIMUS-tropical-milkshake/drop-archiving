@@ -3,6 +3,7 @@ use super::format::{is_archive, is_image, is_mp3};
 use crate::client::grpc::client::GrpcClient;
 use crate::lib::LOGGER;
 use crate::service::archiving::Service;
+use crate::service::metadata::get_bitrate;
 use axum::extract::Multipart;
 use axum::Extension;
 use axum::{http::StatusCode, response::IntoResponse, Json};
@@ -155,8 +156,8 @@ impl Handler {
                 println!("{}", &description);
             }
         }
-        let _ = &self.service.reduce_bitrate(&file_path_mp3, 200).unwrap();
-        let beat_id = &self
+        let bitrate = get_bitrate(&file_path_mp3).unwrap();
+        let mut beat_id = self
             .service
             .insert_beat(
                 &file_path_mp3,
@@ -167,13 +168,33 @@ impl Handler {
                 &beat_genre,
                 &file_path_image,
                 &fname_image,
+                bitrate,
             )
             .await
             .unwrap();
+        if bitrate > 200_000f64 {
+            let (bitrate, fname_mp3_reduced, file_path_mp3_reduced) = self.service.reduce_bitrate(&file_path_mp3, &fname_mp3, 200).unwrap();
+            file_path_mp3 = file_path_mp3_reduced;
+            beat_id = self
+                .service
+                .insert_beat(
+                    &file_path_mp3,
+                    &fname_mp3_reduced,
+                    user_id,
+                    &name,
+                    &description,
+                    &beat_genre,
+                    &file_path_image,
+                    &fname_image,
+                    bitrate,
+                )
+                .await
+                .unwrap();
+        }
         let mut client = self.grpc_client.lock().await;
         let _ = client
             .upload_beat(
-                *beat_id,
+                beat_id,
                 user_id,
                 &name,
                 &description,
