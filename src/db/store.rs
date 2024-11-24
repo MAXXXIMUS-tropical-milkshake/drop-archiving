@@ -1,4 +1,4 @@
-use crate::lib::Minio;
+use crate::libr::Minio;
 use anyhow::Error;
 
 pub struct MinioStore {

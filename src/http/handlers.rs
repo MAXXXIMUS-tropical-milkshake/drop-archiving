@@ -1,7 +1,7 @@
 use super::archiving::get_archive_files;
 use super::format::{is_archive, is_image, is_mp3};
 use crate::client::grpc::client::GrpcClient;
-use crate::lib::LOGGER;
+use crate::libr::LOGGER;
 use crate::service::archiving::Service;
 use crate::service::metadata::get_bitrate;
 use axum::extract::Multipart;

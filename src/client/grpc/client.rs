@@ -7,7 +7,7 @@ use reqwest::Client;
 use tonic::transport::Channel;
 use url::Url;
 
-use crate::lib::LOGGER;
+use crate::libr::LOGGER;
 mod audio {
     tonic::include_proto!("audio");
 }

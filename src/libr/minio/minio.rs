@@ -6,7 +6,7 @@ use aws_sdk_s3::Client;
 use aws_sdk_s3::{config::Credentials, Error};
 use aws_types::region::{self, Region};
 
-use crate::lib::LOGGER;
+use crate::libr::LOGGER;
 
 pub struct Minio {
     user: String,

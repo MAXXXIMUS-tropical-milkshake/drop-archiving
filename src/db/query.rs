@@ -1,5 +1,5 @@
 use crate::db::models::FileMetadata;
-use crate::lib::{Postgres, LOGGER};
+use crate::libr::{Postgres, LOGGER};
 use anyhow::Error;
 use sqlx::Row;
 

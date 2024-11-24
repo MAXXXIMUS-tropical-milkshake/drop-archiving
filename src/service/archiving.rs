@@ -3,7 +3,7 @@ use anyhow::Error;
 use crate::db::models::{BeatData, FileMetadata};
 use crate::db::query::Db;
 use crate::db::store::MinioStore;
-use crate::lib::LOGGER;
+use crate::libr::LOGGER;
 use std::fs;
 use std::fs::metadata;
 use std::path::Path;

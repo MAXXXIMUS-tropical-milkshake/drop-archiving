@@ -10,7 +10,7 @@ use tracing::{debug, error, info};
 use tokio_postgres::Row;
 
 // use crate::logger::LOGGER;
-use crate::{db, lib::LOGGER};
+use crate::{db, libr::LOGGER};
 
 const DEFAULT_MAX_POOL_SIZE: u32 = 10;
 const DEFAULT_CONN_ATTEMPTS: u32 = 10;
