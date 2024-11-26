@@ -192,7 +192,6 @@ impl Handler {
                 .unwrap();
         }
         let mut client = self.grpc_client.lock().await;
-        LOGGER.info(&format!("{} {} {} {} {:?}", beat_id, user_id, &name, &description, beat_genre));
         let _ = client
             .upload_beat(
                 beat_id,
