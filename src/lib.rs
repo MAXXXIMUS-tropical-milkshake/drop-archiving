@@ -39,7 +39,8 @@ pub async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let app = router
         .router
         .layer(DefaultBodyLimit::max(config.body_limit));
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    //let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
     LOGGER.info(&format!("Server running on http://{}", addr));
     Server::bind(&addr)
         .serve(app.into_make_service())
