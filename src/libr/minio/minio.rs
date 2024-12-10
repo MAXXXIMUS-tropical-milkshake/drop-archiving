@@ -33,17 +33,16 @@ impl Minio {
             .region(Region::new(self.region.clone()))
             .endpoint_url(&self.endpoint)
             .credentials_provider(credentials)
+            .force_path_style(true)
             .behavior_version_latest()
             .build();
         let client = Client::from_conf(config);
         LOGGER.info("Connection to minio was successfull");
         Ok(client)
     }
-
     pub async fn create_bucket(&self, client: &Client) -> Result<(), Error> {
         match client.head_bucket().bucket(&self.bucket).send().await {
-            Ok(_) => {
-            }
+            Ok(_) => {}
             Err(_) => {
                 client.create_bucket().bucket(&self.bucket).send().await?;
                 LOGGER.info(&format!("Bucket {} creating was successfull", &self.bucket));
@@ -61,7 +60,10 @@ impl Minio {
             .body(file_content.into())
             .send()
             .await?;
-            LOGGER.info(&format!("Adding file {} to minio bucket {} was successfull", file_path, &self.bucket));
+        LOGGER.info(&format!(
+            "Adding file {} to minio bucket {} was successfull",
+            file_path, &self.bucket
+        ));
 
         Ok(())
     }
