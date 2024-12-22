@@ -1,11 +1,9 @@
 use std::fs;
 
 use audio::audio_service_client::AudioServiceClient;
-use audio::{UploadRequest, UploadResponse};
-use chrono::format::parse;
+use audio::UploadRequest;
 use reqwest::Client;
 use tonic::transport::Channel;
-use url::Url;
 
 use crate::libr::LOGGER;
 mod audio {
@@ -40,13 +38,9 @@ impl GrpcClient {
             beat_genre,
         };
         let response = self.client.upload(request).await?.into_inner();
-        // let mut parsed_file_upload_url = Url::parse(&response.file_upload_url).unwrap();
-        // let mut parsed_image_upload_url = Url::parse(&response.image_upload_url).unwrap();
-        // parsed_file_upload_url.set_host(Some("localhost")).unwrap();
-        // parsed_image_upload_url.set_host(Some("localhost")).unwrap();
         LOGGER.info(&format!(
             "URL {} was received successfully",
-           &response.file_upload_url
+            &response.file_upload_url
         ));
         LOGGER.info(&format!(
             "URL {} was received successfully",

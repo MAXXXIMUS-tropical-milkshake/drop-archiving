@@ -1,16 +1,9 @@
-use once_cell::sync::Lazy;
-use sqlx::{Error, PgPool};
 use sqlx::postgres::PgPoolOptions;
-use std::io;
-use std::time::{self, Duration, Instant};
+use sqlx::{Error, PgPool};
+use std::time::Duration;
 use tokio::time::sleep;
-use tokio_postgres::{Client, Config, NoTls};
-use tracing::{debug, error, info};
-// use anyhow::Error;
-use tokio_postgres::Row;
 
-// use crate::logger::LOGGER;
-use crate::{db, libr::LOGGER};
+use crate::libr::LOGGER;
 
 const DEFAULT_MAX_POOL_SIZE: u32 = 10;
 const DEFAULT_CONN_ATTEMPTS: u32 = 10;

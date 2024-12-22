@@ -1,6 +1,5 @@
-use std::time::{Duration, Instant};
-use tokio::time::error::Elapsed;
-use tracing::{debug, error, info, span, subscriber, warn, Level, Span};
+use std::time::Instant;
+use tracing::{debug, error, info, span, warn, Level, Span};
 use tracing_subscriber::{filter::LevelFilter, fmt, layer::SubscriberExt, Layer, Registry};
 use std::sync::Once;
 use once_cell::sync::Lazy;

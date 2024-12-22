@@ -1,12 +1,11 @@
 use std::fs;
 
+use crate::libr::LOGGER;
 use aws_sdk_s3::config::Builder;
-use aws_sdk_s3::primitives::ByteStream;
 use aws_sdk_s3::Client;
 use aws_sdk_s3::{config::Credentials, Error};
-use aws_types::region::{self, Region};
+use aws_types::region::Region;
 use infer;
-use crate::libr::LOGGER;
 
 pub struct Minio {
     user: String,
@@ -51,11 +50,16 @@ impl Minio {
         Ok(())
     }
 
-    pub async fn upload(&self, client: &Client, file_path: &str, key: &str) -> Result<(), anyhow::Error> {
+    pub async fn upload(
+        &self,
+        client: &Client,
+        file_path: &str,
+        key: &str,
+    ) -> Result<(), anyhow::Error> {
         let file_content = fs::read(file_path).unwrap();
         let mime_type = infer::get_from_path(file_path)?
-                .map(|kind| kind.mime_type())
-                .unwrap_or("application/octet-stream");
+            .map(|kind| kind.mime_type())
+            .unwrap_or("application/octet-stream");
         client
             .put_object()
             .bucket(&self.bucket)
@@ -67,7 +71,6 @@ impl Minio {
         LOGGER.info(&format!(
             "Adding file {} to minio bucket {} was successfull",
             key, &self.bucket
-
         ));
 
         Ok(())

@@ -2,13 +2,12 @@ use crate::libr::LOGGER;
 
 use super::{handlers::Handler, middleware::token_middleware};
 use axum::{
-    body::Bytes,
     extract::{Extension, Multipart, Path},
-    http::{HeaderMap, HeaderValue, StatusCode},
+    http::StatusCode,
     middleware,
     response::{IntoResponse, Response},
     routing::{get, post},
-    Router,
+    Json, Router,
 };
 use std::{path::Path as StdPath, sync::Arc};
 use tokio::fs;
@@ -43,7 +42,6 @@ async fn get_beat_file_route(
     Path(beat_id): Path<i64>,
     Extension(handler): Extension<Arc<Handler>>,
 ) -> impl IntoResponse {
-    LOGGER.info("start get_beat_file_route");
     match handler.get_beat(beat_id).await {
         Ok(file_path) => match fs::read(&file_path).await {
             Ok(file_bytes) => {

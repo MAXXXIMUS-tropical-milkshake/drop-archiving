@@ -29,10 +29,10 @@ ENV PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
 
 RUN cargo install sqlx-cli --no-default-features --features postgres
 
-# COPY . .
+
+RUN git clone https://github.com/googleapis/api-common-protos /app/proto/api-common-protos
 COPY ./Cargo.toml ./Cargo.lock ./
 COPY ./proto /app/proto
-COPY ./api-common-protos /app/proto/api-common-protos
 COPY ./build.rs ./
 COPY src ./src
 
