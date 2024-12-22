@@ -31,7 +31,9 @@ impl Service {
         genres: &Vec<String>,
         file_path_image: &str,
         fname_image: &str,
-        bitrate: f64
+        bitrate: f64,
+        file_path_archive: &str,
+        fname_archive: &str,
     ) -> Result<i64, Error> {
         // let bitrate_cmd = Command::new("ffprobe")
         //     .args(&[
@@ -82,6 +84,7 @@ impl Service {
             description.to_string(),
             genres.clone(),
             user_id,
+            fname_archive.to_string(),
         );
         let _ = self.db.insert_beat_data(data).await.unwrap();
         let _ = self
@@ -91,27 +94,42 @@ impl Service {
             .unwrap();
         let _ = self
             .store
-            .upload_file(file_path_mp3, fname_mp3, file_path_image, fname_image)
+            .upload_file(
+                file_path_mp3,
+                fname_mp3,
+                file_path_image,
+                fname_image,
+                file_path_archive,
+                fname_archive,
+            )
             .await;
 
         Ok(beat_id)
     }
 
-    pub fn reduce_bitrate(&self, input_file_path: &str, input_file_name: &str, target_bitrate: u32) -> Result<(f64, String, String), Error> {
+    pub fn reduce_bitrate(
+        &self,
+        input_file_path: &str,
+        input_file_name: &str,
+        target_bitrate: u32,
+    ) -> Result<(f64, String, String), Error> {
         if !Path::new(input_file_path).exists() {
-            return Err(anyhow::anyhow!("Input file does not exist: {}", input_file_path));
+            return Err(anyhow::anyhow!(
+                "Input file does not exist: {}",
+                input_file_path
+            ));
         }
 
         let reduced_file = format!(
-                "{}_reduced{}",
-                input_file_path.trim_end_matches(".mp3"),
-                ".mp3"
-            );
+            "{}_reduced{}",
+            input_file_path.trim_end_matches(".mp3"),
+            ".mp3"
+        );
         let reduced_file_name = format!(
-                "{}_reduced{}",
-                input_file_name.trim_end_matches(".mp3"),
-                ".mp3"
-            );
+            "{}_reduced{}",
+            input_file_name.trim_end_matches(".mp3"),
+            ".mp3"
+        );
         let target_bitrate_str = format!("{}k", target_bitrate);
         println!("{}", reduced_file);
 
@@ -133,8 +151,15 @@ impl Service {
             .status();
         match status {
             Ok(s) if s.success() => {
-                LOGGER.info(&format!("Bitrate reduced successfully, updated file: {}", input_file_path));
-                Ok((target_bitrate as f64 * 1000f64, reduced_file_name, reduced_file))
+                LOGGER.info(&format!(
+                    "Bitrate reduced successfully, updated file: {}",
+                    input_file_path
+                ));
+                Ok((
+                    target_bitrate as f64 * 1000f64,
+                    reduced_file_name,
+                    reduced_file,
+                ))
             }
             Ok(s) => {
                 let _ = fs::remove_file(&reduced_file);
@@ -148,5 +173,10 @@ impl Service {
                 Err(anyhow::anyhow!("Failed to execute ffmpeg: {}", e))
             }
         }
+    }
+    pub async fn get_beat_by_id(&self, beat_id: i64) -> Result<String, Error> {
+        let link = self.db.get_beat_by_id(beat_id).await.unwrap();
+        let file_path = self.store.get_file(link).await.unwrap();
+        Ok(file_path)
     }
 }

@@ -10,6 +10,7 @@ use axum::{http::StatusCode, response::IntoResponse, Json};
 use ffmpeg_next::ffi::BUFSIZ;
 use http::HeaderMap;
 use serde_json::Value;
+use sqlx::Error;
 use std::fs::{self, File};
 use std::io::Read;
 use std::io::Write;
@@ -44,8 +45,10 @@ impl Handler {
         let mut description = String::new();
         let mut file_path_mp3 = String::new();
         let mut file_path_image = String::new();
+        let mut file_path_archive = String::new();
         let mut fname_mp3 = String::new();
         let mut fname_image = String::new();
+        let mut fname_archive = String::new();
         while let Some(field) = multipart.next_field().await.unwrap() {
             if let Some(_file_name) = field.file_name() {
                 let fname = field.file_name().unwrap().to_string();
@@ -68,6 +71,9 @@ impl Handler {
                 } else if is_image(&data) {
                     file_path_image = file_path.to_str().unwrap().to_string();
                     fname_image = fname;
+                } else if is_archive(&data) {
+                    file_path_archive = file_path.to_str().unwrap().to_string();
+                    fname_archive = fname;
                 }
                 // if is_mp3(&data) {
                 //     let _ = &self
@@ -150,10 +156,6 @@ impl Handler {
                     .and_then(|v| v.as_str())
                     .unwrap()
                     .to_string();
-
-                println!("{}", &name);
-                println!("{:?}", &beat_genre);
-                println!("{}", &description);
             }
         }
         let bitrate = get_bitrate(&file_path_mp3).unwrap();
@@ -169,11 +171,16 @@ impl Handler {
                 &file_path_image,
                 &fname_image,
                 bitrate,
+                &file_path_archive,
+                &fname_archive,
             )
             .await
             .unwrap();
         if bitrate > 200_000f64 {
-            let (bitrate, fname_mp3_reduced, file_path_mp3_reduced) = self.service.reduce_bitrate(&file_path_mp3, &fname_mp3, 200).unwrap();
+            let (bitrate, fname_mp3_reduced, file_path_mp3_reduced) = self
+                .service
+                .reduce_bitrate(&file_path_mp3, &fname_mp3, 200)
+                .unwrap();
             file_path_mp3 = file_path_mp3_reduced;
             beat_id = self
                 .service
@@ -187,6 +194,8 @@ impl Handler {
                     &file_path_image,
                     &fname_image,
                     bitrate,
+                    &file_path_archive,
+                    &fname_archive,
                 )
                 .await
                 .unwrap();
@@ -206,5 +215,10 @@ impl Handler {
             .unwrap();
 
         (StatusCode::OK, Json("File uploaded successfully"))
+    }
+    pub async fn get_beat(&self, beat_id: i64) -> Result<String, anyhow::Error> {
+        LOGGER.info("start get_beat");
+        let file_path = self.service.get_beat_by_id(beat_id).await?;
+        Ok(file_path)
     }
 }

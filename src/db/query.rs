@@ -44,14 +44,15 @@ impl Db {
     pub async fn insert_beat_data(&self, data: BeatData) -> Result<(), Error> {
         let cnt_queries = data.genres.len();
         for i in 0..cnt_queries {
-            let query = "insert into beats (beat_id, name, description, beatmaker_id, genre)
-                                values ($1, $2, $3, $4, $5)";
+            let query = "insert into beats (beat_id, name, description, beatmaker_id, genre, link)
+                                values ($1, $2, $3, $4, $5, $6)";
             match sqlx::query(&query)
                 .bind(&data.beat_id)
                 .bind(&data.name)
                 .bind(&data.description)
                 .bind(&data.beatmaker_id)
                 .bind(&data.genres[i])
+                .bind(&data.link)
                 .execute(&self.postgres.pool)
                 .await
             {
@@ -87,5 +88,22 @@ impl Db {
             }
         }
         Ok(())
+    }
+    pub async fn get_beat_by_id(&self, beat_id: i64) -> Result<String, Error> {
+        let query = "select link from beats where id = $1";
+        match sqlx::query(&query)
+            .bind(&beat_id)
+            .fetch_one(&self.postgres.pool)
+            .await
+        {
+            Ok(row) => {
+                let link: String = row.get("link");
+                Ok(link)
+            }
+            Err(e) => {
+                LOGGER.error(&format!("Beat with this id does not exist {:?}", e));
+                Err(e.into())
+            }
+        }
     }
 }

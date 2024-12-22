@@ -1,0 +1,1 @@
+create index index_on_id on beats(id);

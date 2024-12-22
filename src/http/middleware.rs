@@ -7,6 +7,8 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde_json::Value;
 use std::collections::HashMap;
 
+use crate::libr::LOGGER;
+
 pub async fn get_user_id(token: &str) -> Result<i64, String> {
     let secret = "secret";
     let validation = Validation::default();

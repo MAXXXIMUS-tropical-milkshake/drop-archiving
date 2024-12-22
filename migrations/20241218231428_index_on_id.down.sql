@@ -1,0 +1,1 @@
+drop index index_on_id;

@@ -11,6 +11,7 @@ pub struct BeatData {
     pub description: String,
     pub genres: Vec<String>,
     pub beatmaker_id: i64,
+    pub link: String,
 }
 
 impl FileMetadata {
@@ -31,6 +32,7 @@ impl BeatData {
         description: String,
         genres: Vec<String>,
         beatmaker_id: i64,
+        link: String,
     ) -> Self {
         Self {
             beat_id: beat_id as i32,
@@ -38,6 +40,7 @@ impl BeatData {
             description,
             genres,
             beatmaker_id,
+            link,
         }
     }
 }
